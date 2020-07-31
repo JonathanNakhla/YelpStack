@@ -1,41 +1,48 @@
 package com.jonathannakhla.yelpstack.viewmodels
 
 import androidx.lifecycle.ViewModel
+import com.jonathannakhla.yelpstack.data.Resource
 import com.jonathannakhla.yelpstack.data.Restaurant
+import com.jonathannakhla.yelpstack.repositories.YelpRepo
+import com.jonathannakhla.yelpstack.utils.into
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 
-class MainViewModel : ViewModel() {
+class MainViewModel(private val yelpRepo: YelpRepo) : ViewModel() {
+
+    private lateinit var restaurantRepoDisposable: Disposable
 
     private val behaviorSubject by lazy {
-        BehaviorSubject.create<List<Restaurant>>()
+        BehaviorSubject.create<Resource<List<Restaurant>>>()
     }
 
-    companion object {
-        private val restaurants = listOf(
-            Restaurant(
-                name = "World Famous Hotboys",
-                imageUrl = "https://s3-media0.fl.yelpcdn.com/bphoto/UoRDxx_sHkWSv9zUdQ8tmw/o.jpg",
-                rating = 4.5
-            ), Restaurant(
-                name = "Homeroom",
-                imageUrl = "https://s3-media0.fl.yelpcdn.com/bphoto/pv8zKywavAwUoCxl0xNPLg/o.jpg",
-                rating = 4.0
-            ), Restaurant(
-                name = "Monster Pho",
-                imageUrl = "https://s3-media0.fl.yelpcdn.com/bphoto/ouEp1nb6wV1e5KV5AvV3vQ/o.jpg",
-                rating = 4.0
-            )
-        )
-    }
-
-    fun getRestaurants(): Observable<List<Restaurant>> {
-        behaviorSubject.onNext(restaurants)
+    fun getRestaurants(): Observable<Resource<List<Restaurant>>> {
         return behaviorSubject
+            .doOnSubscribe { initializeRestaurantRepo() }
+    }
+
+    private fun initializeRestaurantRepo() {
+        if (!this::restaurantRepoDisposable.isInitialized) {
+            restaurantRepoDisposable = yelpRepo.getRestaurants()
+                .subscribeOn(Schedulers.io())
+                .subscribe (
+                    {
+                        behaviorSubject.onNext(it)
+                    },
+                    {
+                        behaviorSubject.onNext(Resource.Error(it.message ?: "Encountered error", emptyList()))
+                    }
+                )
+        }
     }
 
     override fun onCleared() {
         super.onCleared()
-        // TODO clear future CompositeDisposable
+        if (this::restaurantRepoDisposable.isInitialized) {
+            restaurantRepoDisposable.dispose()
+        }
     }
 }

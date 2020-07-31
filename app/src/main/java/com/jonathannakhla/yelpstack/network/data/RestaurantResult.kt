@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class RestaurantResult(
+    @SerialName("id") val id: String,
     @SerialName("name") val name: String,
     @SerialName("image_url") val imageUrl: String,
     @SerialName("rating") val rating: Double

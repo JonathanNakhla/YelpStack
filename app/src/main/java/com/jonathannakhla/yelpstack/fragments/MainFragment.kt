@@ -11,6 +11,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.jonathannakhla.yelpstack.viewmodels.MainViewModel
 import com.jonathannakhla.yelpstack.R
 import com.jonathannakhla.yelpstack.adapters.StackAdapter
+import com.jonathannakhla.yelpstack.data.Resource
 import com.jonathannakhla.yelpstack.ui.*
 import com.jonathannakhla.yelpstack.utils.into
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
@@ -64,7 +65,10 @@ class MainFragment : Fragment() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe (
                 {
-                recyclerView.adapter = StackAdapter(it)
+                    when (it) {
+                        is Resource.Success, is Resource.Loading -> recyclerView.adapter = StackAdapter(it.data ?: emptyList())
+                        is Resource.Error -> Log.e(TAG, "Problem grabbing list of restaurants: ${it.message}")
+                    }
                 },
                 {
                     Log.e(TAG, "Problem grabbing list of restaurants", it)
