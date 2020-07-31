@@ -37,6 +37,7 @@ dependencies {
     implementation(NetworkLibraries.rxjavaCallAdapter)
     implementation(NetworkLibraries.retrofitKotlinxSerializationConverter)
     implementation(SupportLibraries.supportAppCompat)
+    implementation(PlayServicesLibraries.playServicesLocation)
     implementation(UiLibraries.constraintLayout)
     implementation(UiLibraries.recyclerview)
     implementation(UiLibraries.viewPager2)

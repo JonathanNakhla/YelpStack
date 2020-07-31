@@ -22,6 +22,7 @@ object Versions {
     const val retrofitKotlinxSerializationConverter = "0.5.0"
     const val androidGradlePlugin = "4.0.1"
     const val support = "1.1.0"
+    const val playServicesLocation = "17.0.0"
     const val constraintLayout = "1.1.3"
     const val recyclerview = "1.2.0-alpha04"
     const val viewPager2 = "1.0.0"
@@ -50,6 +51,10 @@ object NetworkLibraries {
 
 object SupportLibraries {
     const val supportAppCompat = "androidx.appcompat:appcompat:${Versions.support}"
+}
+
+object PlayServicesLibraries {
+    const val playServicesLocation = "com.google.android.gms:play-services-location:${Versions.playServicesLocation}"
 }
 
 object UiLibraries {

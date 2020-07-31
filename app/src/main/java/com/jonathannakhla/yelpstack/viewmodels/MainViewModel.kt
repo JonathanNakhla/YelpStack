@@ -3,6 +3,7 @@ package com.jonathannakhla.yelpstack.viewmodels
 import androidx.lifecycle.ViewModel
 import com.jonathannakhla.yelpstack.data.Resource
 import com.jonathannakhla.yelpstack.data.Restaurant
+import com.jonathannakhla.yelpstack.location.LocationProvider
 import com.jonathannakhla.yelpstack.repositories.YelpRepo
 import com.jonathannakhla.yelpstack.utils.into
 import io.reactivex.rxjava3.core.Observable
@@ -11,7 +12,8 @@ import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 
-class MainViewModel(private val yelpRepo: YelpRepo) : ViewModel() {
+class MainViewModel(private val yelpRepo: YelpRepo,
+                    private val locationProvider: LocationProvider) : ViewModel() {
 
     private lateinit var restaurantRepoDisposable: Disposable
 
@@ -26,7 +28,8 @@ class MainViewModel(private val yelpRepo: YelpRepo) : ViewModel() {
 
     private fun initializeRestaurantRepo() {
         if (!this::restaurantRepoDisposable.isInitialized) {
-            restaurantRepoDisposable = yelpRepo.getRestaurants()
+            restaurantRepoDisposable = locationProvider.getCurrentLocation()
+                .flatMapObservable { yelpRepo.getRestaurants(it.latitude, it.longitude) }
                 .subscribeOn(Schedulers.io())
                 .subscribe (
                     {

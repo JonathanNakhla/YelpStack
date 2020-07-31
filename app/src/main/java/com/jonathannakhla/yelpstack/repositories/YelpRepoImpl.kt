@@ -16,17 +16,17 @@ class YelpRepoImpl(private val yelpApi: YelpApi) : YelpRepo {
         BehaviorSubject.create<Resource<List<Restaurant>>>()
     }
 
-    override fun getRestaurants(): Observable<Resource<List<Restaurant>>> {
+    override fun getRestaurants(latitude: Double, longitude: Double): Observable<Resource<List<Restaurant>>> {
         return behaviorSubject
-            .doOnSubscribe { initializeRestaurantApi() }
+            .doOnSubscribe { initializeRestaurantApi(latitude, longitude) }
     }
 
-    private fun initializeRestaurantApi() {
+    private fun initializeRestaurantApi(latitude: Double, longitude: Double) {
         if (this::repoDisposable.isInitialized) {
             repoDisposable.dispose()
         }
 
-        repoDisposable = yelpApi.getRestaurants()
+        repoDisposable = yelpApi.getRestaurants(latitude, longitude)
             .subscribeOn(Schedulers.io())
             .doOnSubscribe { behaviorSubject.onNext(Resource.Loading(emptyList())) } // TODO might remove
             .map { restaurantsResult ->

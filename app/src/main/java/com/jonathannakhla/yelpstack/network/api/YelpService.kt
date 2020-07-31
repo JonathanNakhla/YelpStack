@@ -9,5 +9,6 @@ import retrofit2.http.Query
 interface YelpService {
     @GET("v3/businesses/search")
     fun getRestaurants(@Header("Authorization") token: String,
-                       @Query("location") location: String): Single<RestaurantsResult>
+                       @Query("latitude") latitude: Double,
+                       @Query("longitude") longitude: Double): Single<RestaurantsResult>
 }

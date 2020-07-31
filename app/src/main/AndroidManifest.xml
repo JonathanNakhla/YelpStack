@@ -3,6 +3,7 @@
     package="com.jonathannakhla.yelpstack">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:name=".application.YelpStackApplication"
