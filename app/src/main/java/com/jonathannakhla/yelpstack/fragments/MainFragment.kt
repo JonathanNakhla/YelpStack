@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
@@ -15,6 +16,7 @@ import com.jonathannakhla.yelpstack.viewmodels.MainViewModel
 import com.jonathannakhla.yelpstack.R
 import com.jonathannakhla.yelpstack.adapters.StackAdapter
 import com.jonathannakhla.yelpstack.data.Resource
+import com.jonathannakhla.yelpstack.data.Restaurant
 import com.jonathannakhla.yelpstack.ui.*
 import com.jonathannakhla.yelpstack.utils.into
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
@@ -32,7 +34,8 @@ class MainFragment : Fragment() {
 
     private val viewModel by viewModel<MainViewModel>()
 
-    private lateinit var recyclerView: ViewPager2
+    private lateinit var viewPager: ViewPager2
+    private lateinit var progressBar: ProgressBar
     private lateinit var prevButton: Button
     private lateinit var nextButton: Button
 
@@ -47,19 +50,29 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        recyclerView = view.findViewById<ViewPager2>(R.id.view_pager).apply {
+        viewPager = view.findViewById<ViewPager2>(R.id.view_pager).apply {
             setPageTransformer(StackSliderTransformer())
         }
+        viewPager.registerOnPageChangeCallback(object: ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                if (position == (viewPager.adapter?.itemCount ?: 0) - 1) {
+                    // TODO handle pagination
+                }
+            }
+        })
+
+        progressBar = view.findViewById(R.id.progress_bar)
 
         prevButton = view.findViewById<Button>(R.id.prev_button).apply {
             setOnClickListener {
-                recyclerView.setCurrentItem(recyclerView.currentItem - 1, true)
+                viewPager.setCurrentItem(viewPager.currentItem - 1, true)
             }
         }
 
         nextButton = view.findViewById<Button>(R.id.next_button).apply {
             setOnClickListener {
-                recyclerView.setCurrentItem(recyclerView.currentItem + 1, true)
+                viewPager.setCurrentItem(viewPager.currentItem + 1, true)
             }
         }
 
@@ -73,7 +86,8 @@ class MainFragment : Fragment() {
             .subscribe (
                 {
                     when (it) {
-                        is Resource.Success, is Resource.Loading -> recyclerView.adapter = StackAdapter(it.data ?: emptyList())
+                        is Resource.Success -> showSuccessState(it.data ?: emptyList())
+                        is Resource.Loading -> showLoadingState()
                         is Resource.Error -> Log.e(TAG, "Problem grabbing list of restaurants: ${it.message}")
                     }
                 },
@@ -81,6 +95,20 @@ class MainFragment : Fragment() {
                     Log.e(TAG, "Problem grabbing list of restaurants", it)
                 }
             ).into(bin)
+    }
+
+
+
+    private fun showSuccessState(restaurants: List<Restaurant>) {
+        viewPager.adapter = StackAdapter(restaurants)
+        viewPager.visibility = View.VISIBLE
+        progressBar.visibility = View.GONE
+    }
+
+    private fun showLoadingState() {
+        Log.d(TAG, "Loading list of restaurants")
+        progressBar.visibility = View.VISIBLE
+        viewPager.visibility = View.GONE
     }
 
     private val requestPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) {isGranted ->
