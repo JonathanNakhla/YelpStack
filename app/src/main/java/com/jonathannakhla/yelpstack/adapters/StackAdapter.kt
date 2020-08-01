@@ -10,7 +10,11 @@ import com.bumptech.glide.Glide
 import com.jonathannakhla.yelpstack.R
 import com.jonathannakhla.yelpstack.data.Restaurant
 
-class StackAdapter(private val restaurants: List<Restaurant>): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class StackAdapter(private var restaurants: List<Restaurant>): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+    init {
+        stateRestorationPolicy = StateRestorationPolicy.PREVENT_WHEN_EMPTY
+    }
 
     companion object {
         private const val RESTAURANT_VIEW_TYPE = 0
@@ -18,14 +22,14 @@ class StackAdapter(private val restaurants: List<Restaurant>): RecyclerView.Adap
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        if (viewType == RESTAURANT_VIEW_TYPE) {
+        return if (viewType == RESTAURANT_VIEW_TYPE) {
             val itemView = LayoutInflater.from(parent.context)
                 .inflate(R.layout.restaurant_card_view, parent, false)
-            return StackViewHolder(itemView)
+            StackViewHolder(itemView)
         } else {
             val itemView = LayoutInflater.from(parent.context)
                 .inflate(R.layout.progress_bar_viewholder, parent, false)
-            return ProgressBarViewHolder(itemView)
+            ProgressBarViewHolder(itemView)
         }
     }
 
@@ -43,6 +47,11 @@ class StackAdapter(private val restaurants: List<Restaurant>): RecyclerView.Adap
         if (holder.itemViewType == RESTAURANT_VIEW_TYPE) {
             (holder as StackViewHolder).bind(restaurants[position])
         }
+    }
+
+    fun setData(list: List<Restaurant>) {
+        restaurants = list
+        notifyDataSetChanged()
     }
 
     class StackViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {

@@ -28,6 +28,8 @@ class MainFragment : Fragment() {
 
     companion object {
         private const val TAG = "MainFragment"
+        // When we should initiate the pagination
+        private const val LOADING_POSITION = 4
 
         fun newInstance() = MainFragment()
     }
@@ -35,6 +37,7 @@ class MainFragment : Fragment() {
     private val viewModel by viewModel<MainViewModel>()
 
     private lateinit var viewPager: ViewPager2
+    private val stackAdapter = StackAdapter(emptyList())
     private lateinit var progressBar: ProgressBar
     private lateinit var prevButton: Button
     private lateinit var nextButton: Button
@@ -52,12 +55,14 @@ class MainFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewPager = view.findViewById<ViewPager2>(R.id.view_pager).apply {
             setPageTransformer(StackSliderTransformer())
+            adapter = stackAdapter
         }
         viewPager.registerOnPageChangeCallback(object: ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
-                if (position == (viewPager.adapter?.itemCount ?: 0) - 1) {
-                    // TODO handle pagination
+                // i.e. we're the 4th to last item on this list
+                if (position == (viewPager.adapter?.itemCount ?: 0) - LOADING_POSITION) {
+                    viewModel.getMoreRestaurants()
                 }
             }
         })
@@ -88,7 +93,7 @@ class MainFragment : Fragment() {
                     when (it) {
                         is Resource.Success -> showSuccessState(it.data ?: emptyList())
                         is Resource.Loading -> showLoadingState()
-                        is Resource.Error -> Log.e(TAG, "Problem grabbing list of restaurants: ${it.message}")
+                        is Resource.Error -> showErrorState(it)
                     }
                 },
                 {
@@ -97,10 +102,8 @@ class MainFragment : Fragment() {
             ).into(bin)
     }
 
-
-
     private fun showSuccessState(restaurants: List<Restaurant>) {
-        viewPager.adapter = StackAdapter(restaurants)
+        stackAdapter.setData(restaurants)
         viewPager.visibility = View.VISIBLE
         progressBar.visibility = View.GONE
     }
@@ -109,6 +112,14 @@ class MainFragment : Fragment() {
         Log.d(TAG, "Loading list of restaurants")
         progressBar.visibility = View.VISIBLE
         viewPager.visibility = View.GONE
+    }
+
+    private fun showErrorState(resource: Resource.Error<List<Restaurant>>) {
+        Toast.makeText(context, "Error updating restaurants: ${resource.message}. Showing last successful result instead.", Toast.LENGTH_SHORT).show()
+        stackAdapter.setData(resource.data ?: emptyList())
+        viewPager.visibility = View.VISIBLE
+        progressBar.visibility = View.GONE
+        Log.e(TAG, "Problem grabbing list of restaurants: ${resource.message}")
     }
 
     private val requestPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) {isGranted ->
