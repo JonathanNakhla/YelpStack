@@ -1,12 +1,15 @@
 package com.jonathannakhla.yelpstack.fragments
 
+import android.Manifest
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
 import com.jonathannakhla.yelpstack.viewmodels.MainViewModel
 import com.jonathannakhla.yelpstack.R
@@ -60,6 +63,10 @@ class MainFragment : Fragment() {
             }
         }
 
+        requestPermission.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+    }
+
+    private fun getRestaurants() {
         viewModel.getRestaurants()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -75,6 +82,12 @@ class MainFragment : Fragment() {
                 }
             ).into(bin)
     }
+
+    private val requestPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) {isGranted ->
+        if(isGranted) getRestaurants()
+        else Toast.makeText(context, "Please grant location permission to continue", Toast.LENGTH_SHORT).show()
+    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

@@ -45,6 +45,7 @@ dependencies {
     implementation(DiLibraries.koin)
     implementation(DiLibraries.koinViewModel)
     implementation(ToolsLibraries.glide)
+    implementation(ToolsLibraries.fragmentApi)
 
     testImplementation(TestLibraries.junit)
     testImplementation(TestLibraries.mockk)

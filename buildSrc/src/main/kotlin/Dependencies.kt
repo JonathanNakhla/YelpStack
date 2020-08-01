@@ -29,6 +29,7 @@ object Versions {
     const val cardview = "28.0.0"
     const val koin = "2.0.1"
     const val glide = "4.11.0"
+    const val fragmentApi = "1.3.0-alpha07"
     const val junit = "5.4.0"
     const val mockk = "1.10.0"
 }
@@ -71,6 +72,7 @@ object DiLibraries {
 
 object ToolsLibraries {
     const val glide = "com.github.bumptech.glide:glide:${Versions.glide}"
+    const val fragmentApi = "androidx.fragment:fragment-ktx:${Versions.fragmentApi}"
 }
 
 object TestLibraries {
